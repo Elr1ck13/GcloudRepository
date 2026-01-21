@@ -1,0 +1,29 @@
+# Cloud Build configuration
+steps:
+  # Paso 1: Build de la imagen usando Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t',
+      'us-central1-docker.pkg.dev/pruebas38grados/java-backend-repo-er/java-hello-world-er:$COMMIT_SHA',
+      '.'
+    ]
+
+  # Paso 2: Push de la imagen al Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'push',
+      'us-central1-docker.pkg.dev/pruebas38grados/java-backend-repo-er/java-hello-world-er:$COMMIT_SHA'
+    ]
+
+  # Paso 3: Deploy en Cloud Run
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gcloud run deploy java-hello-world-er \
+          --image us-central1-docker.pkg.dev/pruebas38grados/java-backend-repo-er/java-hello-world-er:$COMMIT_SHA \
+          --platform=managed \
+          --region us-central1 \
+          --allow-unauthenticated
